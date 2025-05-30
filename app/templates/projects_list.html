@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if is_admin_page %}Всі Проєкти (Адмін){% else %}Проєкти для пожертв{% endif %}
+{% endblock %}
+
+{% block content %}
+    <h2>{% if is_admin_page %}Управління Проєктами{% else %}Актуальні Проєкти{% endif %}</h2>
+
+    {% if current_user and current_user.role == 'admin' and is_admin_page %}
+        <p><a href="{{ url_for('new_project_form_html') }}" class="button">Створити новий проєкт</a></p>
+    {% endif %}
+
+    {% if projects %}
+        <ul class="projects-list">
+            {% for project in projects %}
+                <li class="project-item {% if not project.is_active %}inactive-project{% endif %}">
+                    <h3><a href="{{ url_for('read_project_html', project_id=project.id) }}">{{ project.name }}</a></h3>
+                    <p>{{ project.description|truncate(200) }}</p>
+                    <p>
+                        Статус: {% if project.is_active %}Активний{% else %}Неактивний{% endif %}<br>
+                        Ціль: {{ "%.2f"|format(project.target_amount) }} грн. | Зібрано: {{ "%.2f"|format(project.current_amount) }} грн.<br>
+                        Створено: {{ project.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </p>
+                    {% if project.current_amount < project.target_amount and project.is_active %}
+                        <progress value="{{ project.current_amount }}" max="{{ project.target_amount }}"></progress>
+                    {% elif project.is_active %}
+                         <p><strong>Проєкт завершено! Дякуємо за підтримку!</strong></p>
+                    {% endif %}
+
+                    {% if current_user and current_user.role == 'admin' and is_admin_page %}
+                        <div class="admin-actions">
+                            <a href="{{ url_for('edit_project_form_html', project_id=project.id) }}" class="button edit">Редагувати</a>
+                            <form method="post" action="{{ url_for('delete_project_html', project_id=project.id) }}" style="display: inline;" onsubmit="return confirm('Ви впевнені, що хочете видалити цей проєкт?');">
+                                <button type="submit" class="button delete">Видалити</button>
+                            </form>
+                        </div>
+                    {% elif project.is_active %}
+                         <a href="{{ url_for('make_donation_form_html', project_id=project.id) }}" class="button">Підтримати</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Немає проєктів для відображення.</p>
+    {% endif %}
+{% endblock %}

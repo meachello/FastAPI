@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }} - Проєкт{% endblock %}
+
+{% block content %}
+    <article class="project-detail">
+        <h2>{{ project.name }}</h2>
+        {% if not project.is_active and (not current_user or current_user.role != 'admin') %}
+             <p class="message warning">Цей проєкт наразі неактивний.</p>
+        {% else %}
+            {% if not project.is_active and current_user and current_user.role == 'admin' %}
+                <p class="message warning">Увага: Цей проєкт неактивний (видно тільки адміну).</p>
+            {% endif %}
+            <p class="project-description">{{ project.description }}</p>
+            <p><strong>Цільова сума:</strong> {{ "%.2f"|format(project.target_amount) }} грн.</p>
+            <p><strong>Вже зібрано:</strong> {{ "%.2f"|format(project.current_amount) }} грн.</p>
+            
+            {% if project.current_amount < project.target_amount %}
+                <progress value="{{ project.current_amount }}" max="{{ project.target_amount }}"></progress>
+                <p>{{ ("%.2f"|format((project.current_amount / project.target_amount) * 100)) }}% зібрано</p>
+            {% else %}
+                <p><strong>Проєкт успішно завершено! Дякуємо всім за підтримку!</strong></p>
+            {% endif %}
+
+            {% if request.query_params.get('donation_success') == 'true' %}
+                <p class="message success">Дякуємо за вашу пожертву!</p>
+            {% endif %}
+
+            {% if project.is_active and project.current_amount < project.target_amount %}
+                <p><a href="{{ url_for('make_donation_form_html', project_id=project.id) }}" class="button">Зробити пожертву</a></p>
+            {% endif %}
+
+            {% if current_user and current_user.role == 'admin' %}
+                <div class="admin-actions">
+                    <hr>
+                    <h4>Адмінські дії:</h4>
+                    <a href="{{ url_for('edit_project_form_html', project_id=project.id) }}" class="button edit">Редагувати проєкт</a>
+                    <form method="post" action="{{ url_for('delete_project_html', project_id=project.id) }}" style="display: inline;" onsubmit="return confirm('Ви впевнені, що хочете видалити цей проєкт?');">
+                        <button type="submit" class="button delete">Видалити проєкт</button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <h3>Останні пожертви:</h3>
+            {% if donations %}
+                <ul>
+                    {% for donation in donations %}
+                        <li>
+                            <strong>{{ "%.2f"|format(donation.amount) }} грн.</strong> 
+                            від {{ donation.donor.full_name or 'Анонімний донор' }}
+                            ({{ donation.donation_date.strftime('%Y-%m-%d %H:%M') }})
+                            {% if donation.message %}<p><em>"{{ donation.message }}"</em></p>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Ще не було пожертв для цього проєкту.</p>
+            {% endif %}
+        {% endif %}
+    </article>
+{% endblock %}

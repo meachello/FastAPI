@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{% if project %}Редагувати проєкт{% else %}Створити проєкт{% endif %}{% endblock %}
+
+{% block content %}
+    <h2>{% if project %}Редагування проєкту: {{ project.name }}{% else %}Створення нового проєкту{% endif %}</h2>
+    
+    {% if error %}
+        <p class="message error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ form_action_url }}">
+        <div>
+            <label for="name">Назва проєкту:</label>
+            <input type="text" id="name" name="name" value="{{ project.name if project else '' }}" required>
+        </div>
+        <div>
+            <label for="description">Опис:</label>
+            <textarea id="description" name="description" rows="5">{{ project.description if project else '' }}</textarea>
+        </div>
+        <div>
+            <label for="target_amount">Цільова сума (грн):</label>
+            <input type="number" id="target_amount" name="target_amount" step="0.01" min="1" value="{{ project.target_amount if project else '' }}" required>
+        </div>
+        <div>
+            <label for="is_active">
+                <input type="checkbox" id="is_active" name="is_active" value="True" {% if project and project.is_active %}checked{% elif not project %}checked{% endif %}>
+                Активний (збір коштів відкритий)
+            </label>
+             <!-- Hidden input to ensure 'is_active' is sent even if checkbox is unchecked -->
+            <input type="hidden" name="is_active" value="False" {% if project and project.is_active %}disabled{% elif not project %}disabled{% endif %} id="is_active_hidden">
+        </div>
+        <script>
+            // Синхронізація стану чекбокса з прихованим полем
+            const isActiveCheckbox = document.getElementById('is_active');
+            const isActiveHidden = document.getElementById('is_active_hidden');
+            isActiveCheckbox.addEventListener('change', function() {
+                isActiveHidden.disabled = this.checked;
+            });
+            // Ініціалізація стану при завантаженні
+            isActiveHidden.disabled = isActiveCheckbox.checked;
+        </script>
+
+        <button type="submit">{% if project %}Зберегти зміни{% else %}Створити проєкт{% endif %}</button>
+        <a href="{{ url_for('list_all_projects_admin_html') }}">Скасувати</a>
+    </form>
+{% endblock %}

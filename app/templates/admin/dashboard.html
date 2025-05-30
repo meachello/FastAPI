@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Адмін Панель{% endblock %}
+
+{% block content %}
+    <h2>Адміністративна панель</h2>
+    <p>Вітаємо, {{ current_user.full_name }}!</p>
+    
+    <ul>
+        <li><a href="{{ url_for('list_all_projects_admin_html') }}">Управління проєктами</a></li>
+        <li><a href="{{ url_for('all_donations_admin_html') }}">Переглянути всі пожертви</a></li>
+    </ul>
+{% endblock %}

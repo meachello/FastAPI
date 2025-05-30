@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Добровільні пожертви{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='../static/style.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <header>
+        <h1><a href="{{ url_for('read_root') }}">Медична Установа: Пожертви</a></h1>
+        <nav>
+            <a href="{{ url_for('read_root') }}">Головна</a>
+            <a href="{{ url_for('list_projects_html') }}">Проєкти</a>
+            {% if current_user %}
+                {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}">Адмін Панель</a>
+                {% endif %}
+                <a href="{{ url_for('my_donations_html') }}">Мої пожертви</a>
+                <span>Вітаємо, {{ current_user.full_name or current_user.email }}!</span>
+                <a href="{{ url_for('logout_user') }}">Вийти</a>
+            {% else %}
+                <a href="{{ url_for('login_page') }}">Увійти</a>
+                <a href="{{ url_for('register_page') }}">Зареєструватися</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+
+        <!-- Повідомлення з query параметрів -->
+        {% if request.query_params.get('message') %}
+            <p class="message success">{{ request.query_params.get('message')|replace("_", " ") }}</p>
+        {% endif %}
+        {% if request.query_params.get('error') %}
+            <p class="message error">{{ request.query_params.get('error')|replace("_", " ") }}</p>
+        {% endif %}
+
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

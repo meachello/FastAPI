@@ -10,9 +10,9 @@ load_dotenv()
 # Для MySQL (переконайтесь, що база даних 'donations_db' існує):
 # SQLALCHEMY_DATABASE_URL = "mysql+mysqlclient://user:password@localhost/donations_db"
 # Для PostgreSQL:
-# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@localhost/donations_db"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:syst3m007@localhost/donations_db"
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./donations.db")
+#SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./donations.db")
 
 
 engine = create_engine(

@@ -3,7 +3,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
 from typing import Optional, List
-
+from app.mongo_crud import add_activity_log
+from app.schemas import ActivityLogBase
 from app import crud, schemas, models
 from app.database import get_db
 from app.dependencies import get_current_user_optional, get_current_admin_user, get_current_user
@@ -78,6 +79,11 @@ async def create_project_html(
         is_active=is_active
     )
     project = crud.create_project(db=db, project=project_in)
+    await add_activity_log(ActivityLogBase(
+        user_email=current_user.email,
+        action="CREATE_PROJECT",
+        details={"project_id": project.id, "project_name": project.name}
+    ))
     return RedirectResponse(url=f"/projects/{project.id}", status_code=status.HTTP_303_SEE_OTHER)
 
 

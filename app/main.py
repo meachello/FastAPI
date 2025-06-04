@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 from typing import List
-
+from .mongo_db import close_mongo_connection, client as mongo_client
 from . import models, crud, schemas, auth # <--- ПРАВИЛЬНИЙ РЯДОК
 from .database import engine, get_db, SessionLocal
 from .dependencies import get_current_user_optional, get_current_admin_user, get_current_user
@@ -119,5 +119,19 @@ async def get_open_api_endpoint(
     #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     return app.openapi()
 
-# --- Додавання роутерів для HTML сторінок ---
-# Це буде в app/routers/auth_router.py, app/routers/projects_router.py і т.д.
+@app.on_event("startup")
+async def startup_event():
+    try:
+        # Перевірка підключення до MongoDB
+        await mongo_client.admin.command('ping')
+        print("Successfully connected to MongoDB!")
+    except Exception as e:
+        print(f"Could not connect to MongoDB: {e}")
+    # Тут можна додати create_initial_data() для SQL, якщо потрібно
+    create_initial_data()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_mongo_connection()
+    print("MongoDB connection closed.")

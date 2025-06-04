@@ -9,6 +9,8 @@ from pydantic import BaseModel, EmailStr
 from app import crud, schemas, auth, models
 from app.database import get_db
 from app.dependencies import get_current_user_optional, get_current_user
+from app.mongo_crud import add_activity_log # Імпортуємо функцію
+from app.schemas import ActivityLogBase # Імпортуємо схему
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -81,6 +83,7 @@ async def handle_login(
     )
 
     response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    await add_activity_log(ActivityLogBase(user_email=user.email, action="LOGIN_SUCCESS"))
     response.set_cookie(key="access_token", value=f"{access_token}", httponly=True, max_age=1800,
                         samesite="Lax")  # max_age в секундах
     return response

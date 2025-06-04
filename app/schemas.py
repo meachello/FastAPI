@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List, Any
 from datetime import datetime
 
 # User Schemas
@@ -81,3 +81,19 @@ class TokenData(BaseModel):
 class LoginForm(BaseModel):
     username: EmailStr # email as username
     password: str
+
+class ActivityLogBase(BaseModel):
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    user_email: Optional[str] = None # Або user_id
+    action: str # Наприклад, "LOGIN", "CREATE_PROJECT", "MAKE_DONATION"
+    details: Optional[dict[str, Any]] = None # Додаткова інформація
+
+class ActivityLogInDB(ActivityLogBase):
+    id: str = Field(alias="_id") # MongoDB використовує _id
+
+    class Config:
+        orm_mode = True
+        populate_by_name = True # Дозволяє використовувати _id як id
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }
